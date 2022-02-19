@@ -1,0 +1,32 @@
+vault server -dev -dev-root-token-id root
+
+export VAULT_ADDR=http://127.0.0.1:8200
+
+export VAULT_OIDC_ADDR=http://127.0.0.1:8250
+
+export VAULT_TOKEN=root
+
+vault policy write manager manager.hcl
+
+vault policy write reader reader.hcl
+
+vault policy list
+
+vault auth enable oidc
+
+
+
+vault write auth/oidc/config \
+         oidc_discovery_url="https://gitlab.com" \
+         oidc_client_id="705837159f4ec7a942e5afc0b5c91deef232b14b4455e34e3f516f8e93b384f1" \
+         oidc_client_secret="c39879a36b273ce4ba5110406ebcdb95d761e9bd191ff19b12296a3a8fbcd78a" \
+         default_role="reader"
+
+
+vault write auth/oidc/role/reader \
+      bound_audiences="705837159f4ec7a942e5afc0b5c91deef232b14b4455e34e3f516f8e93b384f1" \
+      allowed_redirect_uris="http://localhost:8200/ui/vault/auth/oidc/oidc/callback" \
+      allowed_redirect_uris="http://localhost:8250/oidc/callback" \
+      user_claim="sub" \
+      ttl="90s" \
+      policies="reader"
